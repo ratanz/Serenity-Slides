@@ -209,7 +209,44 @@ document.addEventListener("DOMContentLoaded", () => {
   sliderItems.querySelectorAll("p").forEach((item, index) => {
     item.addEventListener("click", () => {
       if (index + 1 !== activeSlideIndex && !isAnimating) {
-        transitionSlides(index + 1 > activeSlideIndex ? "next" : "prev");
+        const clickedIndex = index + 1;
+        const direction = clickedIndex > activeSlideIndex ? "next" : "prev";
+        
+        // Update the slide content and positions
+        const prevIndex = getSlideIndex(clickedIndex - 1);
+        const nextIndex = getSlideIndex(clickedIndex + 1);
+        
+        // Remove existing slides
+        slider.querySelectorAll('.slide-container').forEach(slide => slide.remove());
+        
+        // Create and add new slides
+        const prevSlide = createSlide(sliderContent[prevIndex - 1], "prev");
+        const activeSlide = createSlide(sliderContent[clickedIndex - 1], "active");
+        const nextSlide = createSlide(sliderContent[nextIndex - 1], "next");
+        
+        slider.appendChild(prevSlide);
+        slider.appendChild(activeSlide);
+        slider.appendChild(nextSlide);
+        
+        // Set initial positions
+        gsap.set(prevSlide, { ...slidePositions.prev, xPercent: -50, yPercent: -50, clipPath: clipPath.closed });
+        gsap.set(activeSlide, { ...slidePositions.active, xPercent: -50, yPercent: -50, clipPath: clipPath.closed });
+        gsap.set(nextSlide, { ...slidePositions.next, xPercent: -50, yPercent: -50, clipPath: clipPath.closed });
+        
+        // Animate to new positions
+        animateSlide(activeSlide, { ...slidePositions.active, clipPath: clipPath.open });
+        animateSlide(prevSlide, { ...slidePositions.prev, clipPath: clipPath.closed });
+        animateSlide(nextSlide, { ...slidePositions.next, clipPath: clipPath.closed });
+        
+        // Update title and preview
+        createAndAnimateTitle(sliderContent[clickedIndex - 1], direction);
+        updatePreviewImage(sliderContent[clickedIndex - 1]);
+        
+        // Update counter and highlight
+        setTimeout(() => updateCounterAndHighlight(clickedIndex), 1000);
+        
+        // Update active slide index
+        activeSlideIndex = clickedIndex;
       }
     });
   });
